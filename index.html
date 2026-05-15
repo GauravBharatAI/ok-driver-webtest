@@ -454,16 +454,12 @@
 
 <div class="controls" style="flex-wrap: wrap;">
   <button onclick="tryOpenAppWithTimeout('TEST_TOKEN')" class="btn" style="background:#1e1e1e; color:var(--text); border-color:var(--border2);">
-    Launch via Scheme (Safe)
+    Launch Test in App
   </button>
-  <a href="https://abc.kbcd.in/booking-driver/TEST_TOKEN" class="btn" style="text-decoration:none; background:#1e1e1e; color:var(--text); border-color:var(--border2);">
-    Launch via https
-  </a>
 </div>
 
 <div style="padding: 10px 20px; font-size: 10px; color: var(--dim);">
-  Note: Universal links (https) require a valid AASA/AssetLinks file on the domain. 
-  The custom scheme (driverapp://) should work immediately in your development build.
+  This button uses the <code>driverapp://</code> scheme to launch your development build.
 </div>
 
 <div class="divider"></div>
@@ -573,6 +569,107 @@
     if (!isInApp) {
       stopBrowserGPS()
     }
+  }
+
+  function clearLog() {
+    document.getElementById('logList').innerHTML =
+      '<div class="sys-entries" id="sysEntries"></div>' +
+      '<div class="empty-state' + (isTracking ? '' : ' show') + '" id="emptyState">tap start tracking<br>then watch coordinates appear here</div>'
+    logCounter = 0
+    updateCount()
+  }
+
+  // ── receive location from app ──────────────────────────────────────────────
+  window.addEventListener('message', (evt) => {
+    let data
+    try { data = JSON.parse(evt.data) } catch { return }
+
+    if (data.type === 'LOCATION_UPDATE') {
+      onLocationUpdate(data)
+    }
+  })
+
+  function onLocationUpdate(d) {
+    logCounter++
+    updateCount()
+
+    // update coords card
+    const latEl = document.getElementById('latVal')
+    const lonEl = document.getElementById('lonVal')
+
+    latEl.textContent = d.latitude.toFixed(6)
+    lonEl.textContent = d.longitude.toFixed(6)
+    latEl.classList.remove('empty')
+    lonEl.classList.remove('empty')
+
+    // flash
+    latEl.classList.add('flash')
+    lonEl.classList.add('flash')
+    setTimeout(() => { latEl.classList.remove('flash'); lonEl.classList.remove('flash') }, 300)
+
+    document.getElementById('accVal').textContent =
+      'accuracy: ' + (d.accuracy ? d.accuracy.toFixed(1) + 'm' : '—')
+    document.getElementById('speedVal').textContent =
+      'speed: ' + (d.speed != null ? (d.speed * 3.6).toFixed(1) + ' km/h' : '—')
+
+    // add log entry
+    const now    = new Date(d.timestamp || Date.now())
+    const time   = now.toTimeString().slice(0, 8)
+    const entry  = document.createElement('div')
+    entry.className = 'log-entry'
+    entry.innerHTML = `
+      <span class="log-idx">#${logCounter}</span>
+      <span class="log-lat">${d.latitude.toFixed(6)}</span>
+      <span class="log-lon">${d.longitude.toFixed(6)}</span>
+      <span class="log-meta">
+        <span class="log-acc">${d.accuracy ? '±' + d.accuracy.toFixed(0) + 'm' : '—'}</span>
+        <span class="log-time">${time}</span>
+      </span>
+    `
+
+    const sysEntries = document.getElementById('sysEntries')
+    sysEntries.parentNode.insertBefore(entry, sysEntries.nextSibling)
+  }
+
+  // ── system log entries ─────────────────────────────────────────────────────
+  function addSysLog(msg, type = 'info') {
+    const time = new Date().toTimeString().slice(0, 8)
+    const el   = document.createElement('div')
+    el.className = `sys-entry ${type}`
+    el.innerHTML = `<span class="sys-time">${time}</span><span>${msg}</span>`
+
+    const sysEntries = document.getElementById('sysEntries')
+    if (sysEntries) sysEntries.appendChild(el)
+  }
+
+  // ── status helpers ─────────────────────────────────────────────────────────
+  function setStatus(state, text) {
+    const dot  = document.getElementById('statusDot')
+    const txt  = document.getElementById('statusText')
+    dot.className  = 'status-dot ' + state
+    txt.className  = 'status-text ' + state
+    txt.textContent = text
+  }
+
+  function updateCount() {
+    const logCountEl = document.getElementById('logCount')
+    if (logCountEl) logCountEl.textContent = logCounter
+  }
+
+  // ── Deep Link Timeout Pattern ──────────────────────────────────────────────
+  function tryOpenAppWithTimeout(token) {
+    const appUrl = `driverapp://driver/${token}`;
+    const start = Date.now();
+    
+    addSysLog(`Attempting to launch: ${appUrl}`, 'info');
+    window.location.href = appUrl;
+
+    setTimeout(() => {
+      if (Date.now() - start < 2500) {
+        addSysLog('App not detected after 2s. User stayed on web page.', 'warn');
+        alert('App not detected. In a real scenario, we would stay on the mobile site or redirect to the App Store.');
+      }
+    }, 2000);
   }
 </script>
 </body>
