@@ -582,7 +582,9 @@
   // ── receive location from app ──────────────────────────────────────────────
   window.addEventListener('message', (evt) => {
     let data
-    try { data = JSON.parse(evt.data) } catch { return }
+    try { 
+      data = typeof evt.data === 'string' ? JSON.parse(evt.data) : evt.data 
+    } catch { return }
 
     if (data.type === 'LOCATION_UPDATE') {
       onLocationUpdate(data)
