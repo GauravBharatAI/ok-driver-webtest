@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Driver GPS — Test Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0a0a0a;
+    --surface:  #111111;
+    --border:   #1e1e1e;
+    --border2:  #2a2a2a;
+    --text:     #e8e8e2;
+    --muted:    #555550;
+    --dim:      #333330;
+    --green:    #22c55e;
+    --green-d:  #15803d;
+    --green-bg: #0d2818;
+    --red:      #ef4444;
+    --red-d:    #991b1b;
+    --red-bg:   #2d0f0f;
+    --amber:    #f59e0b;
+    --amber-bg: #2d1f05;
+    --blue:     #3b82f6;
+    --mono:     'JetBrains Mono', monospace;
+    --display:  'Syne', sans-serif;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  /* ── header ── */
+  header {
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .logo {
+    font-family: var(--display);
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  .logo span { color: var(--green); }
+
+  .env-badge {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--amber-bg);
+    color: var(--amber);
+    border: 1px solid #4a3210;
+    text-transform: uppercase;
+  }
+
+  /* ── status bar ── */
+  .status-bar {
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    background: var(--surface);
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+
+  .status-dot.active {
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .status-dot.stopped { background: var(--red); }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .status-text {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .status-text.active { color: var(--green); }
+  .status-text.stopped { color: var(--red); }
+
+  .status-context {
+    margin-left: auto;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.03em;
+  }
+
+  /* ── current coords card ── */
+  .coords-card {
+    margin: 16px 20px 0;
+    padding: 16px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .coords-label {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .coords-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .coord-item label {
+    display: block;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .coord-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--green);
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    transition: color 0.2s;
+  }
+
+  .coord-value.flash { color: #86efac; }
+  .coord-value.empty { color: var(--dim); }
+
+  .coord-meta {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* ── controls ── */
+  .controls {
+    display: flex;
+    gap: 10px;
+    padding: 16px 20px;
+    flex-shrink: 0;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 14px 10px;
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-start {
+    background: var(--green-bg);
+    color: var(--green);
+    border-color: var(--green-d);
+  }
+
+  .btn-start:hover:not(:disabled) {
+    background: #0f3320;
+    border-color: var(--green);
+  }
+
+  .btn-start:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .btn-stop {
+    background: var(--red-bg);
+    color: var(--red);
+    border-color: var(--red-d);
+  }
+
+  .btn-stop:hover:not(:disabled) {
+    background: #3d1414;
+    border-color: var(--red);
+  }
+
+  .btn-stop:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .btn-clear {
+    flex: 0 0 auto;
+    padding: 14px 16px;
+    background: transparent;
+    color: var(--muted);
+    border-color: var(--border);
+  }
+
+  .btn-clear:hover { color: var(--text); border-color: var(--border2); }
+
+  .btn-icon {
+    width: 14px; height: 14px;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  /* ── logger ── */
+  .logger-header {
+    padding: 0 20px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .logger-title {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .log-count {
+    background: var(--border2);
+    color: var(--muted);
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 9px;
+  }
+
+  .log-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .log-list::-webkit-scrollbar { width: 3px; }
+  .log-list::-webkit-scrollbar-track { background: transparent; }
+  .log-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  .log-entry {
+    display: grid;
+    grid-template-columns: 52px 1fr 1fr auto;
+    gap: 0;
+    padding: 7px 10px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    transition: border-color 0.2s, background 0.2s;
+    animation: slideIn 0.2s ease-out;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .log-entry:first-child {
+    background: #0d1f12;
+    border-color: #1a3d22;
+  }
+
+  .log-entry:hover { background: var(--surface); }
+
+  .log-idx {
+    font-size: 10px;
+    color: var(--dim);
+    font-weight: 600;
+  }
+
+  .log-lat, .log-lon {
+    font-size: 12px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+  }
+
+  .log-lat { color: #86efac; }
+  .log-lon { color: #7dd3fc; }
+
+  .log-meta {
+    font-size: 10px;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  .log-acc {
+    display: block;
+  }
+
+  .log-time {
+    display: block;
+    color: var(--dim);
+  }
+
+  /* ── system log ── */
+  .sys-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    margin-bottom: 6px;
+  }
+
+  .sys-entry {
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: slideIn 0.2s ease-out;
+  }
+
+  .sys-entry.info  { background: #0d1827; color: #60a5fa; }
+  .sys-entry.ok    { background: var(--green-bg); color: var(--green); }
+  .sys-entry.warn  { background: var(--amber-bg); color: var(--amber); }
+  .sys-entry.err   { background: var(--red-bg); color: var(--red); }
+
+  .sys-time { color: inherit; opacity: 0.5; font-size: 10px; flex-shrink: 0; }
+
+  /* ── empty state ── */
+  .empty-state {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--dim);
+    font-size: 12px;
+    line-height: 2;
+    display: none;
+  }
+
+  .empty-state.show { display: block; }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0 20px 12px;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">ok<span>driver</span> <span style="color:var(--muted);font-weight:400;font-size:12px">/ gps test</span></div>
+  <div class="env-badge">Test Build</div>
+</header>
+
+<div class="status-bar">
+  <div class="status-dot" id="statusDot"></div>
+  <span class="status-text" id="statusText">Idle — waiting for start</span>
+  <span class="status-context" id="statusContext">
+    <span id="inApp">—</span>
+  </span>
+</div>
+
+<div class="coords-card">
+  <div class="coords-label">Current Position</div>
+  <div class="coords-grid">
+    <div class="coord-item">
+      <label>Latitude</label>
+      <div class="coord-value empty" id="latVal">—</div>
+      <div class="coord-meta" id="accVal">accuracy: —</div>
+    </div>
+    <div class="coord-item">
+      <label>Longitude</label>
+      <div class="coord-value empty" id="lonVal">—</div>
+      <div class="coord-meta" id="speedVal">speed: —</div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="btn btn-start" id="btnStart" onclick="sendStart()">
+    <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <circle cx="8" cy="8" r="6.5"/>
+      <path d="M6.5 5.5l4 2.5-4 2.5V5.5z" fill="currentColor" stroke="none"/>
+    </svg>
+    Start tracking
+  </button>
+  <button class="btn btn-stop" id="btnStop" onclick="sendStop()" disabled>
+    <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <circle cx="8" cy="8" r="6.5"/>
+      <rect x="5.5" y="5.5" width="5" height="5" rx="1" fill="currentColor" stroke="none"/>
+    </svg>
+    Stop tracking
+  </button>
+  <button class="btn btn-clear" onclick="clearLog()" title="Clear log">
+    <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 4h10M6 4V2.5h4V4M5 4l.5 9.5h5L11 4"/>
+    </svg>
+  </button>
+</div>
+
+<div class="divider"></div>
+
+<div class="logger-header">
+  <div class="logger-title">App Launch (Deep Links)</div>
+</div>
+
+<div class="controls" style="flex-wrap: wrap;">
+  <button onclick="tryOpenAppWithTimeout('TEST_TOKEN')" class="btn" style="background:#1e1e1e; color:var(--text); border-color:var(--border2);">
+    Launch via Scheme (Safe)
+  </button>
+  <a href="https://abc.kbcd.in/booking-driver/TEST_TOKEN" class="btn" style="text-decoration:none; background:#1e1e1e; color:var(--text); border-color:var(--border2);">
+    Launch via https
+  </a>
+</div>
+
+<div style="padding: 10px 20px; font-size: 10px; color: var(--dim);">
+  Note: Universal links (https) require a valid AASA/AssetLinks file on the domain. 
+  The custom scheme (driverapp://) should work immediately in your development build.
+</div>
+
+<div class="divider"></div>
+
+<div class="logger-header">
+  <div class="logger-title">
+    Location log
+    <span class="log-count" id="logCount">0</span>
+  </div>
+</div>
+
+<div class="log-list" id="logList">
+  <div class="sys-entries" id="sysEntries"></div>
+  <div class="empty-state show" id="emptyState">
+    tap start tracking<br>then watch coordinates appear here
+  </div>
+</div>
+
+<script>
+  // ── state ──────────────────────────────────────────────────────────────────
+  let isTracking = false
+  let logCounter = 0
+  const isInApp  = !!window.ReactNativeWebView
+
+  // ── detect environment ─────────────────────────────────────────────────────
+  document.getElementById('inApp').textContent = isInApp
+    ? '● inside app'
+    : '○ browser (no GPS)'
+
+  if (!isInApp) {
+    addSysLog('Running in browser — LOCATION_UPDATE won\'t arrive until opened inside app', 'warn')
+  } else {
+    addSysLog('Running inside native app — GPS bridge active', 'ok')
+  }
+
+  // ── postMessage to app ─────────────────────────────────────────────────────
+  const notifyApp = (type) => {
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({ type }))
+    }
+  }
+
+  function sendStart() {
+    notifyApp('TRACKING_START')
+    isTracking = true
+
+    setStatus('active', 'Tracking active — GPS incoming')
+    document.getElementById('btnStart').disabled = true
+    document.getElementById('btnStop').disabled  = false
+    document.getElementById('emptyState').classList.remove('show')
+
+    addSysLog('Sent TRACKING_START → app', 'ok')
+
+    // In browser: simulate fake GPS so you can test the UI layout
+    if (!isInApp) {
+      addSysLog('Browser mode: simulating GPS updates every 3s', 'warn')
+      startBrowserSim()
+    }
+  }
+
+  function sendStop() {
+    notifyApp('TRACKING_STOP')
+    isTracking = false
+
+    setStatus('stopped', 'Tracking stopped')
+    document.getElementById('btnStart').disabled = false
+    document.getElementById('btnStop').disabled  = true
+
+    addSysLog('Sent TRACKING_STOP → app', 'warn')
+    stopBrowserSim()
+  }
+
+  function clearLog() {
+    document.getElementById('logList').innerHTML =
+      '<div class="sys-entries" id="sysEntries"></div>' +
+      '<div class="empty-state' + (isTracking ? '' : ' show') + '" id="emptyState">tap start tracking<br>then watch coordinates appear here</div>'
+    logCounter = 0
+    updateCount()
+  }
+
+  // ── receive location from app ──────────────────────────────────────────────
+  window.addEventListener('message', (evt) => {
+    let data
+    try { data = JSON.parse(evt.data) } catch { return }
+
+    if (data.type === 'LOCATION_UPDATE') {
+      onLocationUpdate(data)
+    }
+  })
+
+  function onLocationUpdate(d) {
+    logCounter++
+    updateCount()
+
+    // update coords card
+    const latEl = document.getElementById('latVal')
+    const lonEl = document.getElementById('lonVal')
+
+    latEl.textContent = d.latitude.toFixed(6)
+    lonEl.textContent = d.longitude.toFixed(6)
+    latEl.classList.remove('empty')
+    lonEl.classList.remove('empty')
+
+    // flash
+    latEl.classList.add('flash')
+    lonEl.classList.add('flash')
+    setTimeout(() => { latEl.classList.remove('flash'); lonEl.classList.remove('flash') }, 300)
+
+    document.getElementById('accVal').textContent =
+      'accuracy: ' + (d.accuracy ? d.accuracy.toFixed(1) + 'm' : '—')
+    document.getElementById('speedVal').textContent =
+      'speed: ' + (d.speed != null ? (d.speed * 3.6).toFixed(1) + ' km/h' : '—')
+
+    // add log entry
+    const now    = new Date(d.timestamp || Date.now())
+    const time   = now.toTimeString().slice(0, 8)
+    const entry  = document.createElement('div')
+    entry.className = 'log-entry'
+    entry.innerHTML = `
+      <span class="log-idx">#${logCounter}</span>
+      <span class="log-lat">${d.latitude.toFixed(6)}</span>
+      <span class="log-lon">${d.longitude.toFixed(6)}</span>
+      <span class="log-meta">
+        <span class="log-acc">${d.accuracy ? '±' + d.accuracy.toFixed(0) + 'm' : '—'}</span>
+        <span class="log-time">${time}</span>
+      </span>
+    `
+
+    const sysEntries = document.getElementById('sysEntries')
+    sysEntries.parentNode.insertBefore(entry, sysEntries.nextSibling)
+  }
+
+  // ── system log entries ─────────────────────────────────────────────────────
+  function addSysLog(msg, type = 'info') {
+    const time = new Date().toTimeString().slice(0, 8)
+    const el   = document.createElement('div')
+    el.className = `sys-entry ${type}`
+    el.innerHTML = `<span class="sys-time">${time}</span><span>${msg}</span>`
+
+    const sysEntries = document.getElementById('sysEntries')
+    if (sysEntries) sysEntries.appendChild(el)
+  }
+
+  // ── status helpers ─────────────────────────────────────────────────────────
+  function setStatus(state, text) {
+    const dot  = document.getElementById('statusDot')
+    const txt  = document.getElementById('statusText')
+    dot.className  = 'status-dot ' + state
+    txt.className  = 'status-text ' + state
+    txt.textContent = text
+  }
+
+  function updateCount() {
+    document.getElementById('logCount').textContent = logCounter
+  }
+
+  // ── browser GPS simulator (for testing UI without the app) ─────────────────
+  let simInterval = null
+  let simLat = 28.6139 + (Math.random() - 0.5) * 0.01  // Delhi area
+  let simLon = 77.2090 + (Math.random() - 0.5) * 0.01
+
+  function startBrowserSim() {
+    stopBrowserSim()
+    simInterval = setInterval(() => {
+      if (!isTracking) return
+      simLat += (Math.random() - 0.5) * 0.0002
+      simLon += (Math.random() - 0.5) * 0.0002
+      onLocationUpdate({
+        type:      'LOCATION_UPDATE',
+        latitude:   simLat,
+        longitude:  simLon,
+        accuracy:   Math.random() * 10 + 3,
+        speed:      Math.random() * 5,
+        altitude:   null,
+        heading:    null,
+        timestamp:  Date.now()
+      })
+    }, 3000)
+  }
+
+  function stopBrowserSim() {
+    clearInterval(simInterval)
+    simInterval = null
+  }
+</script>
+</body>
+</html>
