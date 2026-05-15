@@ -493,6 +493,22 @@
 <div class="divider"></div>
 
 <div class="logger-header">
+  <div class="logger-title">Standard API Test (Real App Example)</div>
+</div>
+
+<div class="controls">
+  <button id="btnStandardTest" onclick="runStandardGPSTest()" class="btn" style="background:#0d1827; color:#60a5fa; border-color:#1e293b;">
+    Test Standard watchPosition()
+  </button>
+</div>
+
+<div style="padding: 10px 20px; font-size: 10px; color: var(--dim);">
+  This button uses the standard <code>navigator.geolocation</code> API which is intercepted by the native bridge.
+</div>
+
+<div class="divider"></div>
+
+<div class="logger-header">
   <div class="logger-title">
     Location log
     <span class="log-count" id="logCount">0</span>
@@ -676,6 +692,35 @@
       }, 500);
     }
   });
+
+  // ── Standard API Test (Real App Example) ───────────────────────────────────
+  function runStandardGPSTest() {
+    addSysLog('Calling navigator.geolocation.watchPosition()...', 'info');
+    
+    // Disable the button to prevent multiple watchers
+    const btn = document.getElementById('btnStandardTest');
+    btn.disabled = true;
+    btn.textContent = 'Watcher Active...';
+
+    navigator.geolocation.watchPosition(
+      (pos) => {
+        addSysLog('Received update via Standard API', 'ok');
+        onLocationUpdate({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          accuracy: pos.coords.accuracy,
+          speed: pos.coords.speed,
+          timestamp: pos.timestamp
+        });
+      },
+      (err) => {
+        addSysLog(`Standard API Error: ${err.message}`, 'err');
+        btn.disabled = false;
+        btn.textContent = 'Test Standard watchPosition()';
+      },
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+    );
+  }
 </script>
 </body>
 </html>
