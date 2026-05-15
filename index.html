@@ -739,7 +739,7 @@
 
   // Deep Link Timeout Pattern
   function tryOpenAppWithTimeout(token) {
-    const appUrl = `okdriver://driver/${token}`;
+    const appUrl = `okdriver://driver/${token}?url=${encodeURIComponent(window.location.href)}`;
     const start = Date.now();
     addSysLog(`Attempting to launch: ${appUrl}`, 'info');
     window.location.href = appUrl;
