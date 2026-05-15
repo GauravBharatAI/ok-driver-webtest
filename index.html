@@ -5,42 +5,48 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>OK Driver · GPS Test Console</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg:           #09090b;
-    --surface:      #121215;
-    --surface-hover:#1a1a1f;
-    --border:       #242429;
-    --border-light: #2e2e35;
-    --text:         #ecedee;
-    --text-muted:   #6f6f78;
-    --green:        #22c55e;
-    --green-d:      #15803d;
-    --green-bg:     rgba(34, 197, 94, 0.08);
-    --green-bg-hover: rgba(34, 197, 94, 0.12);
-    --red:          #ef4444;
-    --red-d:        #991b1b;
-    --red-bg:       rgba(239, 68, 68, 0.08);
-    --amber:        #f59e0b;
-    --amber-bg:     rgba(245, 158, 11, 0.08);
-    --blue:         #60a5fa;
-    --blue-bg:      rgba(96, 165, 250, 0.08);
-    --mono:         'JetBrains Mono', monospace;
-    --display:      'Syne', sans-serif;
+    --bg:             #ffffff;
+    --surface:        #f9fafb;
+    --surface-hover:  #f3f4f6;
+    --border:         #f0f0f0;
+    --border-light:   #e5e7eb;
+    --text:           #1a1a1a;
+    --text-muted:     #6b7280;
+    --text-dim:       #9ca3af;
+    --green:          #22c55e;
+    --green-d:        #15803d;
+    --green-bg:       #f0fdf4;
+    --green-bg-hover: #dcfce7;
+    --red:            #ef4444;
+    --red-d:          #b91c1c;
+    --red-bg:         #fef2f2;
+    --amber:          #f59e0b;
+    --amber-bg:       #fffbeb;
+    --blue:           #3b82f6;
+    --blue-bg:        #eff6ff;
+    --font-display:   'Syne', sans-serif;
+    --font-body:      'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --shadow-sm:      0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md:      0 4px 12px rgba(0,0,0,0.06);
+    --radius-sm:      8px;
+    --radius-md:      12px;
+    --radius-lg:      16px;
   }
 
   html, body {
     height: 100%;
     background: var(--bg);
     color: var(--text);
-    font-family: var(--mono);
-    font-size: 13px;
+    font-family: var(--font-body);
+    font-size: 14px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
-    overflow: hidden; /* keep layout tight */
+    overflow: hidden;
   }
 
   body {
@@ -57,14 +63,12 @@
     align-items: center;
     justify-content: space-between;
     flex-shrink: 0;
-    background: rgba(18, 18, 21, 0.8);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: var(--bg);
   }
 
   .logo {
-    font-family: var(--display);
-    font-size: 16px;
+    font-family: var(--font-display);
+    font-size: 18px;
     font-weight: 800;
     letter-spacing: -0.02em;
     color: var(--text);
@@ -75,15 +79,23 @@
 
   .logo span { color: var(--green); }
 
+  .logo .sub {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-left: 6px;
+  }
+
   .env-badge {
     font-size: 10px;
     font-weight: 600;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.04em;
     padding: 4px 10px;
     border-radius: 6px;
-    background: var(--amber-bg);
-    color: var(--amber);
-    border: 1px solid rgba(245, 158, 11, 0.15);
+    background: var(--green-bg);
+    color: var(--green);
+    border: 1px solid #bbf7d0;
     text-transform: uppercase;
   }
 
@@ -99,16 +111,16 @@
   }
 
   .status-dot {
-    width: 9px; height: 9px;
+    width: 10px; height: 10px;
     border-radius: 50%;
-    background: var(--text-muted);
+    background: var(--text-dim);
     flex-shrink: 0;
     transition: background 0.3s, box-shadow 0.3s;
   }
 
   .status-dot.active {
     background: var(--green);
-    box-shadow: 0 0 10px var(--green);
+    box-shadow: 0 0 8px rgba(34,197,94,0.4);
     animation: pulse 2s ease-in-out infinite;
   }
 
@@ -120,19 +132,18 @@
   }
 
   .status-text {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     color: var(--text-muted);
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
+    letter-spacing: 0.02em;
   }
 
-  .status-text.active { color: var(--green); }
-  .status-text.stopped { color: var(--red); }
+  .status-text.active { color: var(--green); font-weight: 600; }
+  .status-text.stopped { color: var(--red); font-weight: 600; }
 
   .status-context {
     margin-left: auto;
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-muted);
     display: flex;
     align-items: center;
@@ -140,9 +151,9 @@
   }
 
   .context-dot {
-    width: 6px; height: 6px;
+    width: 7px; height: 7px;
     border-radius: 50%;
-    background: var(--text-muted);
+    background: var(--text-dim);
   }
 
   .context-dot.inapp { background: var(--green); }
@@ -152,16 +163,16 @@
   .coords-card {
     margin: 20px 24px 0;
     padding: 20px 24px;
-    background: var(--surface);
+    background: var(--bg);
     border: 1px solid var(--border);
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
     flex-shrink: 0;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    box-shadow: var(--shadow-md);
   }
 
   .coords-label {
-    font-size: 10px;
-    letter-spacing: 0.12em;
+    font-size: 11px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--text-muted);
     margin-bottom: 16px;
@@ -176,8 +187,8 @@
 
   .coord-item label {
     display: block;
-    font-size: 10px;
-    letter-spacing: 0.1em;
+    font-size: 11px;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--text-muted);
     margin-bottom: 6px;
@@ -185,7 +196,7 @@
   }
 
   .coord-value {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 700;
     color: var(--green);
     letter-spacing: -0.02em;
@@ -194,11 +205,11 @@
     line-height: 1.2;
   }
 
-  .coord-value.flash { color: #86efac; }
-  .coord-value.empty { color: #3f3f46; }
+  .coord-value.flash { color: #4ade80; }
+  .coord-value.empty { color: var(--text-dim); }
 
   .coord-meta {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-muted);
     margin-top: 6px;
     display: flex;
@@ -216,58 +227,57 @@
 
   .btn {
     flex: 1;
-    padding: 14px 12px;
+    padding: 14px 16px;
     border: 1px solid var(--border-light);
-    border-radius: 12px;
-    font-family: var(--mono);
-    font-size: 12px;
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-size: 13px;
     font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    letter-spacing: 0.02em;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    background: var(--surface);
-    color: var(--text-muted);
+    background: var(--bg);
+    color: var(--text);
   }
 
   .btn svg {
     width: 16px;
-    height: 16;
+    height: 16px;
     stroke-width: 1.5;
   }
 
   .btn-start {
-    background: var(--green-bg);
-    color: var(--green);
-    border-color: rgba(34, 197, 94, 0.25);
+    background: var(--green);
+    color: white;
+    border-color: var(--green);
   }
 
   .btn-start:hover:not(:disabled) {
-    background: var(--green-bg-hover);
-    border-color: var(--green);
+    background: #16a34a;
+    border-color: #16a34a;
+    box-shadow: 0 4px 12px rgba(34,197,94,0.25);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
   }
 
   .btn-stop {
-    background: var(--red-bg);
+    background: white;
     color: var(--red);
-    border-color: rgba(239, 68, 68, 0.25);
+    border-color: #fecaca;
   }
 
   .btn-stop:hover:not(:disabled) {
-    background: rgba(239, 68, 68, 0.15);
+    background: var(--red-bg);
     border-color: var(--red);
+    box-shadow: 0 4px 12px rgba(239,68,68,0.1);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
   }
 
   .btn:disabled {
-    opacity: 0.35;
+    opacity: 0.5;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
@@ -275,16 +285,73 @@
 
   .btn-clear {
     flex: 0 0 auto;
-    padding: 14px 18px;
-    background: transparent;
+    padding: 14px 20px;
+    background: white;
     color: var(--text-muted);
-    border-color: var(--border);
+    border-color: var(--border-light);
   }
 
   .btn-clear:hover {
-    color: var(--text);
-    border-color: var(--border-light);
     background: var(--surface-hover);
+    color: var(--text);
+    border-color: var(--text-dim);
+  }
+
+  /* ── standard API test section ── */
+  .section-header {
+    padding: 8px 24px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0 24px 12px;
+    flex-shrink: 0;
+  }
+
+  .btn-test-api {
+    margin: 0 24px 20px;
+    padding: 12px 16px;
+    background: var(--blue-bg);
+    color: var(--blue);
+    border: 1px solid #bfdbfe;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: background 0.2s;
+    width: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-test-api:hover:not(:disabled) {
+    background: #dbeafe;
+  }
+
+  .btn-test-api:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .api-hint {
+    padding: 0 24px 8px;
+    font-size: 11px;
+    color: var(--text-dim);
   }
 
   /* ── logger area ── */
@@ -297,8 +364,8 @@
   }
 
   .logger-title {
-    font-size: 10px;
-    letter-spacing: 0.12em;
+    font-size: 11px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--text-muted);
     display: flex;
@@ -308,19 +375,13 @@
   }
 
   .log-count {
-    background: var(--border);
+    background: var(--surface);
     color: var(--text-muted);
     padding: 2px 8px;
     border-radius: 10px;
     font-size: 10px;
     font-weight: 600;
-  }
-
-  .divider {
-    height: 1px;
-    background: var(--border);
-    margin: 0 24px 12px;
-    flex-shrink: 0;
+    border: 1px solid var(--border-light);
   }
 
   .log-list {
@@ -340,12 +401,12 @@
     display: grid;
     grid-template-columns: 54px 1fr 1fr auto;
     gap: 8px;
-    padding: 8px 12px;
-    border-radius: 8px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
     border: 1px solid transparent;
     transition: background 0.15s, border-color 0.15s;
     animation: slideIn 0.2s ease-out;
-    background: var(--surface);
+    background: var(--bg);
   }
 
   @keyframes slideIn {
@@ -353,38 +414,44 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  .log-entry:first-child {
-    background: rgba(34, 197, 94, 0.06);
-    border-color: rgba(34, 197, 94, 0.2);
+  .log-entry:nth-child(odd) {
+    background: var(--surface);
   }
 
-  .log-entry:hover { background: var(--surface-hover); }
+  .log-entry:first-child {
+    background: var(--green-bg);
+    border-color: #bbf7d0;
+  }
+
+  .log-entry:hover {
+    background: var(--surface-hover);
+  }
 
   .log-idx {
-    font-size: 10px;
-    color: var(--text-muted);
+    font-size: 11px;
+    color: var(--text-dim);
     font-weight: 600;
     text-align: right;
   }
 
   .log-lat, .log-lon {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
     color: var(--text);
   }
 
-  .log-lat { color: #86efac; }
-  .log-lon { color: #7dd3fc; }
+  .log-lat { color: #15803d; }
+  .log-lon { color: #1d4ed8; }
 
   .log-meta {
-    font-size: 10px;
+    font-size: 11px;
     color: var(--text-muted);
     text-align: right;
   }
 
   .log-acc { display: block; }
-  .log-time { display: block; color: var(--text-muted); opacity: 0.7; }
+  .log-time { display: block; color: var(--text-dim); }
 
   /* system log entries */
   .sys-entries {
@@ -396,40 +463,46 @@
 
   .sys-entry {
     padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 11px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
     display: flex;
     align-items: center;
     gap: 10px;
     animation: slideIn 0.2s ease-out;
     font-weight: 500;
+    background: var(--bg);
+    border: 1px solid var(--border);
   }
 
-  .sys-entry.info  { background: var(--blue-bg); color: var(--blue); }
-  .sys-entry.ok    { background: var(--green-bg); color: var(--green); }
-  .sys-entry.warn  { background: var(--amber-bg); color: var(--amber); }
-  .sys-entry.err   { background: var(--red-bg); color: var(--red); }
+  .sys-entry.info  { background: var(--blue-bg); border-color: #bfdbfe; color: var(--blue); }
+  .sys-entry.ok    { background: var(--green-bg); border-color: #bbf7d0; color: var(--green); }
+  .sys-entry.warn  { background: var(--amber-bg); border-color: #fde68a; color: var(--amber); }
+  .sys-entry.err   { background: var(--red-bg); border-color: #fecaca; color: var(--red); }
 
-  .sys-time { opacity: 0.6; font-size: 10px; flex-shrink: 0; font-weight: 400; }
+  .sys-time { opacity: 0.6; font-size: 11px; flex-shrink: 0; font-weight: 400; }
 
   .empty-state {
     padding: 40px 20px;
     text-align: center;
-    color: #3f3f46;
-    font-size: 12px;
+    color: var(--text-dim);
+    font-size: 13px;
     line-height: 1.8;
     display: none;
     background: var(--surface);
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     margin-top: 8px;
+    border: 1px dashed var(--border-light);
   }
 
   .empty-state.show { display: block; }
 
-  /* responsive touch */
+  /* responsive */
   @media (max-width: 480px) {
     .coords-card { padding: 16px; }
-    .coord-value { font-size: 18px; }
+    .coord-value { font-size: 20px; }
+    .controls { flex-wrap: wrap; }
+    .btn { flex: 1 1 45%; }
+    .btn-clear { flex: 0 0 auto; }
   }
 </style>
 </head>
@@ -438,7 +511,7 @@
 <header>
   <div class="logo">
     OK<span>Driver</span>
-    <span style="color:var(--text-muted); font-weight:400; font-size:12px; margin-left:4px;">/ gps test</span>
+    <span class="sub">/ gps test</span>
   </div>
   <div class="env-badge">Test Build</div>
 </header>
@@ -470,14 +543,14 @@
 
 <div class="controls">
   <button class="btn btn-start" id="btnStart" onclick="sendStart()">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
       <circle cx="8" cy="8" r="6.5"/>
       <path d="M6.5 5.5l4 2.5-4 2.5V5.5z" fill="currentColor" stroke="none"/>
     </svg>
     Start tracking
   </button>
   <button class="btn btn-stop" id="btnStop" onclick="sendStop()" disabled>
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
       <circle cx="8" cy="8" r="6.5"/>
       <rect x="5.5" y="5.5" width="5" height="5" rx="1" fill="currentColor" stroke="none"/>
     </svg>
@@ -492,18 +565,15 @@
 
 <div class="divider"></div>
 
-<div class="logger-header">
-  <div class="logger-title">Standard API Test (Real App Example)</div>
+<div class="section-header">
+  <div class="section-title">Standard API Test</div>
 </div>
-
-<div class="controls">
-  <button id="btnStandardTest" onclick="runStandardGPSTest()" class="btn" style="background:#0d1827; color:#60a5fa; border-color:#1e293b;">
-    Test Standard watchPosition()
-  </button>
-</div>
-
-<div style="padding: 10px 20px; font-size: 10px; color: var(--dim);">
-  This button uses the standard <code>navigator.geolocation</code> API which is intercepted by the native bridge.
+<button id="btnStandardTest" onclick="runStandardGPSTest()" class="btn-test-api">
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l3 2"/></svg>
+  Test Standard watchPosition()
+</button>
+<div class="api-hint">
+  Uses the standard <code style="background:#f3f4f6; padding:1px 4px; border-radius:3px;">navigator.geolocation</code> API (intercepted by native bridge).
 </div>
 
 <div class="divider"></div>
@@ -667,37 +737,10 @@
     document.getElementById('logCount').textContent = logCounter
   }
 
-  // Deep Link Timeout Pattern (example)
-  function tryOpenAppWithTimeout(token) {
-    const appUrl = `driverapp://driver/${token}`;
-    const start = Date.now();
-    addSysLog(`Attempting to launch: ${appUrl}`, 'info');
-    window.location.href = appUrl;
-    setTimeout(() => {
-      if (Date.now() - start < 2500) {
-        addSysLog('App not detected after 2s. User stayed on web page.', 'warn');
-        alert('App not detected. In production you would redirect to the App Store.');
-      }
-    }, 2000);
-  }
-
-  window.addEventListener('load', () => {
-    const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-    if (!isInApp && isMobile) {
-      setTimeout(() => {
-        const params = new URLSearchParams(window.location.search);
-        const token = params.get('token') || 'AUTO_TOKEN';
-        addSysLog('Mobile browser detected. Attempting automatic app launch...', 'info');
-        tryOpenAppWithTimeout(token);
-      }, 500);
-    }
-  });
-
-  // ── Standard API Test (Real App Example) ───────────────────────────────────
+  // ── Standard API Test ────────────────────────────────────────────────────
   function runStandardGPSTest() {
     addSysLog('Calling navigator.geolocation.watchPosition()...', 'info');
     
-    // Disable the button to prevent multiple watchers
     const btn = document.getElementById('btnStandardTest');
     btn.disabled = true;
     btn.textContent = 'Watcher Active...';
