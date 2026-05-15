@@ -3,31 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Driver GPS — Test Console</title>
+<title>OK Driver · GPS Test Console</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg:       #0a0a0a;
-    --surface:  #111111;
-    --border:   #1e1e1e;
-    --border2:  #2a2a2a;
-    --text:     #e8e8e2;
-    --muted:    #555550;
-    --dim:      #333330;
-    --green:    #22c55e;
-    --green-d:  #15803d;
-    --green-bg: #0d2818;
-    --red:      #ef4444;
-    --red-d:    #991b1b;
-    --red-bg:   #2d0f0f;
-    --amber:    #f59e0b;
-    --amber-bg: #2d1f05;
-    --blue:     #3b82f6;
-    --mono:     'JetBrains Mono', monospace;
-    --display:  'Syne', sans-serif;
+    --bg:           #09090b;
+    --surface:      #121215;
+    --surface-hover:#1a1a1f;
+    --border:       #242429;
+    --border-light: #2e2e35;
+    --text:         #ecedee;
+    --text-muted:   #6f6f78;
+    --green:        #22c55e;
+    --green-d:      #15803d;
+    --green-bg:     rgba(34, 197, 94, 0.08);
+    --green-bg-hover: rgba(34, 197, 94, 0.12);
+    --red:          #ef4444;
+    --red-d:        #991b1b;
+    --red-bg:       rgba(239, 68, 68, 0.08);
+    --amber:        #f59e0b;
+    --amber-bg:     rgba(245, 158, 11, 0.08);
+    --blue:         #60a5fa;
+    --blue-bg:      rgba(96, 165, 250, 0.08);
+    --mono:         'JetBrains Mono', monospace;
+    --display:      'Syne', sans-serif;
   }
 
   html, body {
@@ -38,32 +40,37 @@
     font-size: 13px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+    overflow: hidden; /* keep layout tight */
   }
 
   body {
     display: flex;
     flex-direction: column;
     min-height: 100dvh;
-    padding: 0;
-    overflow-x: hidden;
   }
 
   /* ── header ── */
   header {
-    padding: 16px 20px 14px;
+    padding: 16px 24px 14px;
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-shrink: 0;
+    background: rgba(18, 18, 21, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
 
   .logo {
     font-family: var(--display);
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 800;
     letter-spacing: -0.02em;
     color: var(--text);
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
   }
 
   .logo span { color: var(--green); }
@@ -72,50 +79,51 @@
     font-size: 10px;
     font-weight: 600;
     letter-spacing: 0.08em;
-    padding: 3px 8px;
-    border-radius: 4px;
+    padding: 4px 10px;
+    border-radius: 6px;
     background: var(--amber-bg);
     color: var(--amber);
-    border: 1px solid #4a3210;
+    border: 1px solid rgba(245, 158, 11, 0.15);
     text-transform: uppercase;
   }
 
   /* ── status bar ── */
   .status-bar {
-    padding: 10px 20px;
+    padding: 12px 24px;
     border-bottom: 1px solid var(--border);
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     flex-shrink: 0;
     background: var(--surface);
   }
 
   .status-dot {
-    width: 8px; height: 8px;
+    width: 9px; height: 9px;
     border-radius: 50%;
-    background: var(--muted);
+    background: var(--text-muted);
     flex-shrink: 0;
-    transition: background 0.3s;
+    transition: background 0.3s, box-shadow 0.3s;
   }
 
   .status-dot.active {
     background: var(--green);
-    box-shadow: 0 0 8px var(--green);
+    box-shadow: 0 0 10px var(--green);
     animation: pulse 2s ease-in-out infinite;
   }
 
   .status-dot.stopped { background: var(--red); }
 
   @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.9); }
   }
 
   .status-text {
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.05em;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: 0.03em;
     text-transform: uppercase;
   }
 
@@ -124,139 +132,164 @@
 
   .status-context {
     margin-left: auto;
-    font-size: 10px;
-    color: var(--dim);
-    letter-spacing: 0.03em;
+    font-size: 11px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
 
-  /* ── current coords card ── */
+  .context-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text-muted);
+  }
+
+  .context-dot.inapp { background: var(--green); }
+  .context-dot.browser { background: var(--amber); }
+
+  /* ── coords card ── */
   .coords-card {
-    margin: 16px 20px 0;
-    padding: 16px 18px;
+    margin: 20px 24px 0;
+    padding: 20px 24px;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 16px;
     flex-shrink: 0;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
   }
 
   .coords-label {
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 10px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    font-weight: 600;
   }
 
   .coords-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 20px;
   }
 
   .coord-item label {
     display: block;
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 4px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    font-weight: 500;
   }
 
   .coord-value {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 700;
     color: var(--green);
     letter-spacing: -0.02em;
     font-variant-numeric: tabular-nums;
     transition: color 0.2s;
+    line-height: 1.2;
   }
 
   .coord-value.flash { color: #86efac; }
-  .coord-value.empty { color: var(--dim); }
+  .coord-value.empty { color: #3f3f46; }
 
   .coord-meta {
-    font-size: 10px;
-    color: var(--muted);
-    margin-top: 2px;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
 
   /* ── controls ── */
   .controls {
     display: flex;
-    gap: 10px;
-    padding: 16px 20px;
+    gap: 12px;
+    padding: 20px 24px;
     flex-shrink: 0;
   }
 
   .btn {
     flex: 1;
-    padding: 14px 10px;
-    border: 1px solid var(--border2);
-    border-radius: 6px;
+    padding: 14px 12px;
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
     font-family: var(--mono);
     font-size: 12px;
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+    background: var(--surface);
+    color: var(--text-muted);
+  }
+
+  .btn svg {
+    width: 16px;
+    height: 16;
+    stroke-width: 1.5;
   }
 
   .btn-start {
     background: var(--green-bg);
     color: var(--green);
-    border-color: var(--green-d);
+    border-color: rgba(34, 197, 94, 0.25);
   }
 
   .btn-start:hover:not(:disabled) {
-    background: #0f3320;
+    background: var(--green-bg-hover);
     border-color: var(--green);
-  }
-
-  .btn-start:disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
   }
 
   .btn-stop {
     background: var(--red-bg);
     color: var(--red);
-    border-color: var(--red-d);
+    border-color: rgba(239, 68, 68, 0.25);
   }
 
   .btn-stop:hover:not(:disabled) {
-    background: #3d1414;
+    background: rgba(239, 68, 68, 0.15);
     border-color: var(--red);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
   }
 
-  .btn-stop:disabled {
+  .btn:disabled {
     opacity: 0.35;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
   }
 
   .btn-clear {
     flex: 0 0 auto;
-    padding: 14px 16px;
+    padding: 14px 18px;
     background: transparent;
-    color: var(--muted);
+    color: var(--text-muted);
     border-color: var(--border);
   }
 
-  .btn-clear:hover { color: var(--text); border-color: var(--border2); }
-
-  .btn-icon {
-    width: 14px; height: 14px;
-    display: inline-block;
-    flex-shrink: 0;
+  .btn-clear:hover {
+    color: var(--text);
+    border-color: var(--border-light);
+    background: var(--surface-hover);
   }
 
-  /* ── logger ── */
+  /* ── logger area ── */
   .logger-header {
-    padding: 0 20px 8px;
+    padding: 8px 24px 12px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -264,63 +297,74 @@
   }
 
   .logger-title {
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: var(--text-muted);
     display: flex;
     align-items: center;
     gap: 8px;
+    font-weight: 600;
   }
 
   .log-count {
-    background: var(--border2);
-    color: var(--muted);
-    padding: 1px 6px;
+    background: var(--border);
+    color: var(--text-muted);
+    padding: 2px 8px;
     border-radius: 10px;
-    font-size: 9px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0 24px 12px;
+    flex-shrink: 0;
   }
 
   .log-list {
     flex: 1;
     overflow-y: auto;
-    padding: 0 20px 20px;
+    padding: 0 24px 24px;
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
   }
 
-  .log-list::-webkit-scrollbar { width: 3px; }
+  .log-list::-webkit-scrollbar { width: 4px; }
   .log-list::-webkit-scrollbar-track { background: transparent; }
-  .log-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  .log-list::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
 
   .log-entry {
     display: grid;
-    grid-template-columns: 52px 1fr 1fr auto;
-    gap: 0;
-    padding: 7px 10px;
-    border-radius: 4px;
+    grid-template-columns: 54px 1fr 1fr auto;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
     border: 1px solid transparent;
-    transition: border-color 0.2s, background 0.2s;
+    transition: background 0.15s, border-color 0.15s;
     animation: slideIn 0.2s ease-out;
+    background: var(--surface);
   }
 
   @keyframes slideIn {
-    from { opacity: 0; transform: translateY(-4px); }
+    from { opacity: 0; transform: translateY(-6px); }
     to   { opacity: 1; transform: translateY(0); }
   }
 
   .log-entry:first-child {
-    background: #0d1f12;
-    border-color: #1a3d22;
+    background: rgba(34, 197, 94, 0.06);
+    border-color: rgba(34, 197, 94, 0.2);
   }
 
-  .log-entry:hover { background: var(--surface); }
+  .log-entry:hover { background: var(--surface-hover); }
 
   .log-idx {
     font-size: 10px;
-    color: var(--dim);
+    color: var(--text-muted);
     font-weight: 600;
+    text-align: right;
   }
 
   .log-lat, .log-lon {
@@ -335,68 +379,67 @@
 
   .log-meta {
     font-size: 10px;
-    color: var(--muted);
+    color: var(--text-muted);
     text-align: right;
   }
 
-  .log-acc {
-    display: block;
-  }
+  .log-acc { display: block; }
+  .log-time { display: block; color: var(--text-muted); opacity: 0.7; }
 
-  .log-time {
-    display: block;
-    color: var(--dim);
-  }
-
-  /* ── system log ── */
+  /* system log entries */
   .sys-entries {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
     margin-bottom: 6px;
   }
 
   .sys-entry {
-    padding: 6px 10px;
-    border-radius: 4px;
+    padding: 8px 12px;
+    border-radius: 8px;
     font-size: 11px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     animation: slideIn 0.2s ease-out;
+    font-weight: 500;
   }
 
-  .sys-entry.info  { background: #0d1827; color: #60a5fa; }
+  .sys-entry.info  { background: var(--blue-bg); color: var(--blue); }
   .sys-entry.ok    { background: var(--green-bg); color: var(--green); }
   .sys-entry.warn  { background: var(--amber-bg); color: var(--amber); }
   .sys-entry.err   { background: var(--red-bg); color: var(--red); }
 
-  .sys-time { color: inherit; opacity: 0.5; font-size: 10px; flex-shrink: 0; }
+  .sys-time { opacity: 0.6; font-size: 10px; flex-shrink: 0; font-weight: 400; }
 
-  /* ── empty state ── */
   .empty-state {
     padding: 40px 20px;
     text-align: center;
-    color: var(--dim);
+    color: #3f3f46;
     font-size: 12px;
-    line-height: 2;
+    line-height: 1.8;
     display: none;
+    background: var(--surface);
+    border-radius: 12px;
+    margin-top: 8px;
   }
 
   .empty-state.show { display: block; }
 
-  .divider {
-    height: 1px;
-    background: var(--border);
-    margin: 0 20px 12px;
-    flex-shrink: 0;
+  /* responsive touch */
+  @media (max-width: 480px) {
+    .coords-card { padding: 16px; }
+    .coord-value { font-size: 18px; }
   }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">ok<span>driver</span> <span style="color:var(--muted);font-weight:400;font-size:12px">/ gps test</span></div>
+  <div class="logo">
+    OK<span>Driver</span>
+    <span style="color:var(--text-muted); font-weight:400; font-size:12px; margin-left:4px;">/ gps test</span>
+  </div>
   <div class="env-badge">Test Build</div>
 </header>
 
@@ -404,6 +447,7 @@
   <div class="status-dot" id="statusDot"></div>
   <span class="status-text" id="statusText">Idle — waiting for start</span>
   <span class="status-context" id="statusContext">
+    <span class="context-dot browser" id="contextDot"></span>
     <span id="inApp">—</span>
   </span>
 </div>
@@ -426,21 +470,21 @@
 
 <div class="controls">
   <button class="btn btn-start" id="btnStart" onclick="sendStart()">
-    <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
       <circle cx="8" cy="8" r="6.5"/>
       <path d="M6.5 5.5l4 2.5-4 2.5V5.5z" fill="currentColor" stroke="none"/>
     </svg>
     Start tracking
   </button>
   <button class="btn btn-stop" id="btnStop" onclick="sendStop()" disabled>
-    <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
       <circle cx="8" cy="8" r="6.5"/>
       <rect x="5.5" y="5.5" width="5" height="5" rx="1" fill="currentColor" stroke="none"/>
     </svg>
     Stop tracking
   </button>
   <button class="btn btn-clear" onclick="clearLog()" title="Clear log">
-    <svg class="btn-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
       <path d="M3 4h10M6 4V2.5h4V4M5 4l.5 9.5h5L11 4"/>
     </svg>
   </button>
@@ -463,55 +507,50 @@
 </div>
 
 <script>
-  // ── state ──────────────────────────────────────────────────────────────────
+  // ── state ──
   let isTracking = false
   let logCounter = 0
   const isInApp  = !!window.ReactNativeWebView
 
-  // ── detect environment ─────────────────────────────────────────────────────
-  document.getElementById('inApp').textContent = isInApp
-    ? '● inside app'
-    : '○ browser (no GPS)'
-
-  if (!isInApp) {
-    addSysLog('Running in browser — LOCATION_UPDATE won\'t arrive until opened inside app', 'warn')
-  } else {
+  // update context indicator
+  const contextDot = document.getElementById('contextDot')
+  const inAppText = document.getElementById('inApp')
+  if (isInApp) {
+    contextDot.className = 'context-dot inapp'
+    inAppText.textContent = 'inside app'
     addSysLog('Running inside native app — GPS bridge active', 'ok')
+  } else {
+    contextDot.className = 'context-dot browser'
+    inAppText.textContent = 'browser (no GPS)'
+    addSysLog('Running in browser — LOCATION_UPDATE won\'t arrive until opened inside app', 'warn')
   }
 
-  // ── postMessage to app ─────────────────────────────────────────────────────
-  const notifyApp = (type) => {
+  function notifyApp(type) {
     if (window.ReactNativeWebView) {
       window.ReactNativeWebView.postMessage(JSON.stringify({ type }))
     }
   }
 
-  // ── Browser GPS Logic (for testing UI outside the app) ─────────────────────
   let browserWatchId = null
 
   function startBrowserGPS() {
     if (!navigator.geolocation) {
-      addSysLog('Geolocation is not supported by this browser', 'err')
+      addSysLog('Geolocation not supported by browser', 'err')
       return
     }
-
     addSysLog('Using browser Geolocation API', 'info')
     browserWatchId = navigator.geolocation.watchPosition(
-      (pos) => {
-        onLocationUpdate({
-          type:      'LOCATION_UPDATE',
-          latitude:   pos.coords.latitude,
-          longitude:  pos.coords.longitude,
-          accuracy:   pos.coords.accuracy,
-          speed:      pos.coords.speed,
-          altitude:   pos.coords.altitude,
-          heading:    pos.coords.heading,
-          timestamp:  pos.timestamp
-        })
-      },
-      (err) => {
-        addSysLog(`Browser GPS Error: ${err.message}`, 'err')
-      },
+      (pos) => onLocationUpdate({
+        type: 'LOCATION_UPDATE',
+        latitude:  pos.coords.latitude,
+        longitude: pos.coords.longitude,
+        accuracy:  pos.coords.accuracy,
+        speed:     pos.coords.speed,
+        altitude:  pos.coords.altitude,
+        heading:   pos.coords.heading,
+        timestamp: pos.timestamp
+      }),
+      (err) => addSysLog(`Browser GPS Error: ${err.message}`, 'err'),
       { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
     )
   }
@@ -526,33 +565,22 @@
   function sendStart() {
     notifyApp('TRACKING_START')
     isTracking = true
-
     setStatus('active', 'Tracking active — GPS incoming')
     document.getElementById('btnStart').disabled = true
     document.getElementById('btnStop').disabled  = false
     document.getElementById('emptyState').classList.remove('show')
-
     addSysLog('Sent TRACKING_START → app', 'ok')
-
-    // In browser: use real GPS
-    if (!isInApp) {
-      startBrowserGPS()
-    }
+    if (!isInApp) startBrowserGPS()
   }
 
   function sendStop() {
     notifyApp('TRACKING_STOP')
     isTracking = false
-
     setStatus('stopped', 'Tracking stopped')
     document.getElementById('btnStart').disabled = false
     document.getElementById('btnStop').disabled  = true
-
     addSysLog('Sent TRACKING_STOP → app', 'warn')
-    
-    if (!isInApp) {
-      stopBrowserGPS()
-    }
+    if (!isInApp) stopBrowserGPS()
   }
 
   function clearLog() {
@@ -563,42 +591,29 @@
     updateCount()
   }
 
-  // ── receive location from app ──────────────────────────────────────────────
   window.addEventListener('message', (evt) => {
     let data
-    try { 
-      data = typeof evt.data === 'string' ? JSON.parse(evt.data) : evt.data 
-    } catch { return }
-
-    if (data.type === 'LOCATION_UPDATE') {
-      onLocationUpdate(data)
-    }
+    try { data = typeof evt.data === 'string' ? JSON.parse(evt.data) : evt.data } catch { return }
+    if (data.type === 'LOCATION_UPDATE') onLocationUpdate(data)
   })
 
   function onLocationUpdate(d) {
     logCounter++
     updateCount()
 
-    // update coords card
     const latEl = document.getElementById('latVal')
     const lonEl = document.getElementById('lonVal')
-
     latEl.textContent = d.latitude.toFixed(6)
     lonEl.textContent = d.longitude.toFixed(6)
     latEl.classList.remove('empty')
     lonEl.classList.remove('empty')
-
-    // flash
     latEl.classList.add('flash')
     lonEl.classList.add('flash')
     setTimeout(() => { latEl.classList.remove('flash'); lonEl.classList.remove('flash') }, 300)
 
-    document.getElementById('accVal').textContent =
-      'accuracy: ' + (d.accuracy ? d.accuracy.toFixed(1) + 'm' : '—')
-    document.getElementById('speedVal').textContent =
-      'speed: ' + (d.speed != null ? (d.speed * 3.6).toFixed(1) + ' km/h' : '—')
+    document.getElementById('accVal').textContent = 'accuracy: ' + (d.accuracy ? d.accuracy.toFixed(1) + 'm' : '—')
+    document.getElementById('speedVal').textContent = 'speed: ' + (d.speed != null ? (d.speed * 3.6).toFixed(1) + ' km/h' : '—')
 
-    // add log entry
     const now    = new Date(d.timestamp || Date.now())
     const time   = now.toTimeString().slice(0, 8)
     const entry  = document.createElement('div')
@@ -612,61 +627,50 @@
         <span class="log-time">${time}</span>
       </span>
     `
-
     const sysEntries = document.getElementById('sysEntries')
     sysEntries.parentNode.insertBefore(entry, sysEntries.nextSibling)
   }
 
-  // ── system log entries ─────────────────────────────────────────────────────
   function addSysLog(msg, type = 'info') {
     const time = new Date().toTimeString().slice(0, 8)
     const el   = document.createElement('div')
     el.className = `sys-entry ${type}`
     el.innerHTML = `<span class="sys-time">${time}</span><span>${msg}</span>`
-
-    const sysEntries = document.getElementById('sysEntries')
-    if (sysEntries) sysEntries.appendChild(el)
+    document.getElementById('sysEntries').appendChild(el)
   }
 
-  // ── status helpers ─────────────────────────────────────────────────────────
   function setStatus(state, text) {
-    const dot  = document.getElementById('statusDot')
-    const txt  = document.getElementById('statusText')
-    dot.className  = 'status-dot ' + state
-    txt.className  = 'status-text ' + state
+    const dot = document.getElementById('statusDot')
+    const txt = document.getElementById('statusText')
+    dot.className = 'status-dot ' + state
+    txt.className = 'status-text ' + state
     txt.textContent = text
   }
 
   function updateCount() {
-    const logCountEl = document.getElementById('logCount')
-    if (logCountEl) logCountEl.textContent = logCounter
+    document.getElementById('logCount').textContent = logCounter
   }
 
-  // ── Deep Link Timeout Pattern ──────────────────────────────────────────────
+  // Deep Link Timeout Pattern (example)
   function tryOpenAppWithTimeout(token) {
     const appUrl = `driverapp://driver/${token}`;
     const start = Date.now();
-    
     addSysLog(`Attempting to launch: ${appUrl}`, 'info');
     window.location.href = appUrl;
-
     setTimeout(() => {
       if (Date.now() - start < 2500) {
         addSysLog('App not detected after 2s. User stayed on web page.', 'warn');
-        alert('App not detected. In a real scenario, we would stay on the mobile site or redirect to the App Store.');
+        alert('App not detected. In production you would redirect to the App Store.');
       }
     }, 2000);
   }
 
-  // ── Auto-launch logic ──────────────────────────────────────────────────────
   window.addEventListener('load', () => {
-    // Only auto-launch if we are in a mobile browser and NOT already inside the app
     const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
     if (!isInApp && isMobile) {
       setTimeout(() => {
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token') || 'AUTO_TOKEN';
-        
         addSysLog('Mobile browser detected. Attempting automatic app launch...', 'info');
         tryOpenAppWithTimeout(token);
       }, 500);
