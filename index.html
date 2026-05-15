@@ -679,11 +679,13 @@
     // Only auto-launch if we are in a mobile browser and NOT already inside the app
     const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
     if (!isInApp && isMobile) {
-      const params = new URLSearchParams(window.location.search);
-      const token = params.get('token') || 'AUTO_TOKEN';
-      
-      addSysLog('Mobile browser detected. Attempting automatic app launch...', 'info');
-      tryOpenAppWithTimeout(token);
+      setTimeout(() => {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token') || 'AUTO_TOKEN';
+        
+        addSysLog('Mobile browser detected. Attempting automatic app launch...', 'info');
+        tryOpenAppWithTimeout(token);
+      }, 500);
     }
   });
 </script>
