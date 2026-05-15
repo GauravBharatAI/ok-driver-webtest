@@ -506,6 +506,43 @@
     }
   }
 
+  // ── Browser GPS Logic (for testing UI outside the app) ─────────────────────
+  let browserWatchId = null
+
+  function startBrowserGPS() {
+    if (!navigator.geolocation) {
+      addSysLog('Geolocation is not supported by this browser', 'err')
+      return
+    }
+
+    addSysLog('Using browser Geolocation API', 'info')
+    browserWatchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        onLocationUpdate({
+          type:      'LOCATION_UPDATE',
+          latitude:   pos.coords.latitude,
+          longitude:  pos.coords.longitude,
+          accuracy:   pos.coords.accuracy,
+          speed:      pos.coords.speed,
+          altitude:   pos.coords.altitude,
+          heading:    pos.coords.heading,
+          timestamp:  pos.timestamp
+        })
+      },
+      (err) => {
+        addSysLog(`Browser GPS Error: ${err.message}`, 'err')
+      },
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+    )
+  }
+
+  function stopBrowserGPS() {
+    if (browserWatchId !== null) {
+      navigator.geolocation.clearWatch(browserWatchId)
+      browserWatchId = null
+    }
+  }
+
   function sendStart() {
     notifyApp('TRACKING_START')
     isTracking = true
@@ -517,10 +554,9 @@
 
     addSysLog('Sent TRACKING_START → app', 'ok')
 
-    // In browser: simulate fake GPS so you can test the UI layout
+    // In browser: use real GPS
     if (!isInApp) {
-      addSysLog('Browser mode: simulating GPS updates every 3s', 'warn')
-      startBrowserSim()
+      startBrowserGPS()
     }
   }
 
@@ -533,120 +569,10 @@
     document.getElementById('btnStop').disabled  = true
 
     addSysLog('Sent TRACKING_STOP → app', 'warn')
-    stopBrowserSim()
-  }
-
-  function clearLog() {
-    document.getElementById('logList').innerHTML =
-      '<div class="sys-entries" id="sysEntries"></div>' +
-      '<div class="empty-state' + (isTracking ? '' : ' show') + '" id="emptyState">tap start tracking<br>then watch coordinates appear here</div>'
-    logCounter = 0
-    updateCount()
-  }
-
-  // ── receive location from app ──────────────────────────────────────────────
-  window.addEventListener('message', (evt) => {
-    let data
-    try { data = JSON.parse(evt.data) } catch { return }
-
-    if (data.type === 'LOCATION_UPDATE') {
-      onLocationUpdate(data)
+    
+    if (!isInApp) {
+      stopBrowserGPS()
     }
-  })
-
-  function onLocationUpdate(d) {
-    logCounter++
-    updateCount()
-
-    // update coords card
-    const latEl = document.getElementById('latVal')
-    const lonEl = document.getElementById('lonVal')
-
-    latEl.textContent = d.latitude.toFixed(6)
-    lonEl.textContent = d.longitude.toFixed(6)
-    latEl.classList.remove('empty')
-    lonEl.classList.remove('empty')
-
-    // flash
-    latEl.classList.add('flash')
-    lonEl.classList.add('flash')
-    setTimeout(() => { latEl.classList.remove('flash'); lonEl.classList.remove('flash') }, 300)
-
-    document.getElementById('accVal').textContent =
-      'accuracy: ' + (d.accuracy ? d.accuracy.toFixed(1) + 'm' : '—')
-    document.getElementById('speedVal').textContent =
-      'speed: ' + (d.speed != null ? (d.speed * 3.6).toFixed(1) + ' km/h' : '—')
-
-    // add log entry
-    const now    = new Date(d.timestamp || Date.now())
-    const time   = now.toTimeString().slice(0, 8)
-    const entry  = document.createElement('div')
-    entry.className = 'log-entry'
-    entry.innerHTML = `
-      <span class="log-idx">#${logCounter}</span>
-      <span class="log-lat">${d.latitude.toFixed(6)}</span>
-      <span class="log-lon">${d.longitude.toFixed(6)}</span>
-      <span class="log-meta">
-        <span class="log-acc">${d.accuracy ? '±' + d.accuracy.toFixed(0) + 'm' : '—'}</span>
-        <span class="log-time">${time}</span>
-      </span>
-    `
-
-    const sysEntries = document.getElementById('sysEntries')
-    sysEntries.parentNode.insertBefore(entry, sysEntries.nextSibling)
-  }
-
-  // ── system log entries ─────────────────────────────────────────────────────
-  function addSysLog(msg, type = 'info') {
-    const time = new Date().toTimeString().slice(0, 8)
-    const el   = document.createElement('div')
-    el.className = `sys-entry ${type}`
-    el.innerHTML = `<span class="sys-time">${time}</span><span>${msg}</span>`
-
-    const sysEntries = document.getElementById('sysEntries')
-    if (sysEntries) sysEntries.appendChild(el)
-  }
-
-  // ── status helpers ─────────────────────────────────────────────────────────
-  function setStatus(state, text) {
-    const dot  = document.getElementById('statusDot')
-    const txt  = document.getElementById('statusText')
-    dot.className  = 'status-dot ' + state
-    txt.className  = 'status-text ' + state
-    txt.textContent = text
-  }
-
-  function updateCount() {
-    document.getElementById('logCount').textContent = logCounter
-  }
-
-  // ── browser GPS simulator (for testing UI without the app) ─────────────────
-  let simInterval = null
-  let simLat = 28.6139 + (Math.random() - 0.5) * 0.01  // Delhi area
-  let simLon = 77.2090 + (Math.random() - 0.5) * 0.01
-
-  function startBrowserSim() {
-    stopBrowserSim()
-    simInterval = setInterval(() => {
-      if (!isTracking) return
-      simLat += (Math.random() - 0.5) * 0.0002
-      simLon += (Math.random() - 0.5) * 0.0002
-      onLocationUpdate({
-        type:      'LOCATION_UPDATE',
-        latitude:   simLat,
-        longitude:  simLon,
-        accuracy:   Math.random() * 10 + 3,
-        speed:      Math.random() * 5,
-        altitude:   null,
-        heading:    null,
-        timestamp:  Date.now()
-      })
-    }, 3000)
-  }
-
-  function stopBrowserSim() {
-    clearInterval(simInterval)
-    simInterval = null
   }
 </script>
 </body>
